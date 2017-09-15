@@ -14,22 +14,32 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
  
 public class TeamJavaSpeak extends ReceiverAdapter {
  
     final List<String> history = new LinkedList<String>();
- 
+    final List<String> online_users = new LinkedList<String>();
+    Random gerador = new Random();
     private JChannel channel;
-    private String userName = System.getProperty("user.name");
+    private String userName  = "user" + gerador.nextInt();
     private JTextField textField;
     private JTextArea textArea;
-
-    public static void main(String[] args) throws Exception {
-        new TeamJavaSpeak().start();
+    
+    TeamJavaSpeak(String sala){
+    	try {
+			start(sala);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
  
     public void viewAccepted(View newView) {
+    	String name = "" + newView;
+        online_users.add(name);
         appendText("Na sala: " + newView + "\n");
+        
     }
  
     public void receive(Message msg) {
@@ -56,13 +66,13 @@ public class TeamJavaSpeak extends ReceiverAdapter {
         for(String str: list) appendText(str);
     }
  
-    private void start() throws Exception {
+    private void start(String sala) throws Exception {
         final JPanel panel = createPanel();
         JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("Opções");
+    
         channel = new JChannel();
         channel.setReceiver(this);
-        channel.connect("ChatCluster");
+        channel.connect(sala);
         channel.getState(null, 10000);
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -73,25 +83,20 @@ public class TeamJavaSpeak extends ReceiverAdapter {
                 frame.getContentPane().add(panel);
                 //frame.pack();
                 frame.setVisible(true);
-                JMenuItem mntmNewMenuItem_1 = new JMenuItem("Novo Cluster");
-                fileMenu.add(mntmNewMenuItem_1);
-                mntmNewMenuItem_1.addActionListener(new ActionListener() {
-        			@Override
-        			public void actionPerformed(ActionEvent e) {
-        				// TODO Auto-generated method stub
-        			     try {
-							start();
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-        			}
-                
-                });
+               
                 JMenu mnNewMenu = new JMenu("Usuario");
                 menuBar.add(mnNewMenu);
-                
+                JMenuItem itemNome = new JMenuItem("Nome atual");
+                mnNewMenu.add(itemNome);
+                itemNome.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						// TODO Auto-generated method stub
+						JOptionPane.showMessageDialog(frame,"Nome Atual: " + userName);
+					}
+                	
+                });
                 JMenuItem mntmNewMenuItem = new JMenuItem("Trocar Nome");
                 mnNewMenu.add(mntmNewMenuItem);
                 mntmNewMenuItem.addActionListener(new ActionListener() {
@@ -103,8 +108,6 @@ public class TeamJavaSpeak extends ReceiverAdapter {
 					}
                 	
                 });
-                
-                menuBar.add(fileMenu);
                
             }
         });
